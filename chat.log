@@ -1,0 +1,874 @@
+ Implement a RESTful API for a simple online bookstore using Spring, Hibernate and MySQL. The API should allow users to perform CRUD operations on books, authors, and genres. Books should have a title, author, genre, price, and quantity available. Users should be able to search for books by title, author, or genre. Use Hibernate to persist data to a relational database.
+ChatGPT
+
+Creating a RESTful API for a simple online bookstore using Spring, Hibernate, and MySQL involves several steps. Below, I'll provide a step-by-step guide to implement this API. We'll use Spring Boot for building the application, Hibernate for data persistence, and MySQL as the relational database.
+
+Step 1: Set Up the Development Environment
+
+Before you begin, make sure you have the following tools and technologies installed:
+
+    Java Development Kit (JDK)
+    Spring Boot
+    Hibernate
+    MySQL
+    IDE (e.g., IntelliJ IDEA, Eclipse)
+
+Step 2: Create a Spring Boot Project
+
+Create a new Spring Boot project using your preferred IDE or by using the Spring Initializer (https://start.spring.io/). Include the necessary dependencies for Spring Web, Spring Data JPA, and MySQL.
+
+Step 3: Define Entity Classes
+
+Create entity classes for Book, Author, and Genre. These classes will represent the tables in the database. An example structure for the Book entity might look like this:
+
+java
+
+@Entity
+public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String title;
+    @ManyToOne
+    private Author author;
+    @ManyToOne
+    private Genre genre;
+    private double price;
+    private int quantityAvailable;
+
+    // Getters and setters
+}
+
+Repeat this process for the Author and Genre entities.
+
+Step 4: Define Repositories
+
+Create Spring Data JPA repositories for each entity. These repositories will provide the CRUD operations. For example, for the Book entity:
+
+java
+
+public interface BookRepository extends JpaRepository<Book, Long> {
+    List<Book> findByTitleContaining(String title);
+    List<Book> findByAuthor(Author author);
+    List<Book> findByGenre(Genre genre);
+}
+
+Step 5: Configure Database Connection
+
+In the application.properties or application.yml file, configure the database connection properties:
+
+properties
+
+spring.datasource.url=jdbc:mysql://localhost:3306/bookstore
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.hibernate.ddl-auto=update
+
+Step 6: Create Service Layer
+
+Create service classes to encapsulate the business logic. Implement CRUD operations and search methods in the service classes.
+
+Step 7: Create Controllers
+
+Create controllers to handle HTTP requests. Define endpoints for creating, reading, updating, and deleting books, authors, and genres. Here's an example controller method for searching books by title:
+
+java
+
+@RestController
+@RequestMapping("/api/books")
+public class BookController {
+    @Autowired
+    private BookService bookService;
+
+    @GetMapping("/search")
+    public List<Book> searchBooksByTitle(@RequestParam("title") String title) {
+        return bookService.searchBooksByTitle(title);
+    }
+
+    // Other CRUD methods
+}
+
+Step 8: Run the Application
+
+Run the Spring Boot application, and it should automatically create the necessary database tables and establish the connection to the MySQL database.
+
+Step 9: Test the API
+
+You can use tools like Postman or curl to test your API by sending HTTP requests to the defined endpoints.
+
+That's a basic outline of how to create a RESTful API for an online bookstore using Spring, Hibernate, and MySQL. You can expand upon this foundation by adding more features like authentication, pagination, error handling, and validation as needed for your application.
+User
+Give me the definitions for author and genre classes also
+ChatGPT
+
+Certainly, here are the definitions for the Author and Genre classes in your online bookstore application:
+
+Author Class:
+
+java
+
+@Entity
+public class Author {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String bio;
+
+    // Getters and setters
+}
+
+In the Author class, we define the author's name and a brief biography. The @Entity annotation indicates that this class is an entity to be persisted in the database. Each author is identified by a unique id.
+
+Genre Class:
+
+java
+
+@Entity
+public class Genre {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String description;
+
+    // Getters and setters
+}
+
+In the Genre class, we define the genre's name and a description of the genre. Similar to the Author class, the @Entity annotation indicates that this class is an entity to be persisted in the database, and each genre is identified by a unique id.
+
+These definitions allow you to store information about authors and genres in your database, and you can associate books with authors and genres using foreign keys.
+User
+Also their repositories and service classes for all 3 entities
+ChatGPT
+
+Sure, here are the repository and service classes for the Author, Genre, and Book entities in your online bookstore application:
+
+Author Repository:
+
+java
+
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+    // You can add custom query methods here if needed
+}
+
+Genre Repository:
+
+java
+
+public interface GenreRepository extends JpaRepository<Genre, Long> {
+    // You can add custom query methods here if needed
+}
+
+Book Repository:
+
+java
+
+public interface BookRepository extends JpaRepository<Book, Long> {
+    List<Book> findByTitleContaining(String title);
+    List<Book> findByAuthor(Author author);
+    List<Book> findByGenre(Genre genre);
+    // You can add custom query methods here if needed
+}
+
+Author Service:
+
+java
+
+@Service
+public class AuthorService {
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    public Author saveAuthor(Author author) {
+        return authorRepository.save(author);
+    }
+
+    public List<Author> getAllAuthors() {
+        return authorRepository.findAll();
+    }
+
+    public Author getAuthorById(Long id) {
+        return authorRepository.findById(id).orElse(null);
+    }
+
+    public void deleteAuthor(Long id) {
+        authorRepository.deleteById(id);
+    }
+}
+
+Genre Service:
+
+java
+
+@Service
+public class GenreService {
+    @Autowired
+    private GenreRepository genreRepository;
+
+    public Genre saveGenre(Genre genre) {
+        return genreRepository.save(genre);
+    }
+
+    public List<Genre> getAllGenres() {
+        return genreRepository.findAll();
+    }
+
+    public Genre getGenreById(Long id) {
+        return genreRepository.findById(id).orElse(null);
+    }
+
+    public void deleteGenre(Long id) {
+        genreRepository.deleteById(id);
+    }
+}
+
+Book Service:
+
+java
+
+@Service
+public class BookService {
+    @Autowired
+    private BookRepository bookRepository;
+
+    public Book saveBook(Book book) {
+        return bookRepository.save(book);
+    }
+
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id).orElse(null);
+    }
+
+    public List<Book> searchBooksByTitle(String title) {
+        return bookRepository.findByTitleContaining(title);
+    }
+
+    public List<Book> getBooksByAuthor(Author author) {
+        return bookRepository.findByAuthor(author);
+    }
+
+    public List<Book> getBooksByGenre(Genre genre) {
+        return bookRepository.findByGenre(genre);
+    }
+
+    public void deleteBook(Long id) {
+        bookRepository.deleteById(id);
+    }
+}
+
+These repository and service classes provide the basic CRUD operations and search functionality for the Author, Genre, and Book entities in your online bookstore application. You can add custom query methods or additional business logic as needed for your specific requirements.
+User
+Give me definitions for author and genre controllers
+ChatGPT
+
+Certainly, here are the definitions for the AuthorController and GenreController in your online bookstore application:
+
+Author Controller:
+
+java
+
+@RestController
+@RequestMapping("/api/authors")
+public class AuthorController {
+    @Autowired
+    private AuthorService authorService;
+
+    @PostMapping
+    public Author createAuthor(@RequestBody Author author) {
+        return authorService.saveAuthor(author);
+    }
+
+    @GetMapping
+    public List<Author> getAllAuthors() {
+        return authorService.getAllAuthors();
+    }
+
+    @GetMapping("/{id}")
+    public Author getAuthorById(@PathVariable Long id) {
+        return authorService.getAuthorById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteAuthor(@PathVariable Long id) {
+        authorService.deleteAuthor(id);
+    }
+}
+
+Genre Controller:
+
+java
+
+@RestController
+@RequestMapping("/api/genres")
+public class GenreController {
+    @Autowired
+    private GenreService genreService;
+
+    @PostMapping
+    public Genre createGenre(@RequestBody Genre genre) {
+        return genreService.saveGenre(genre);
+    }
+
+    @GetMapping
+    public List<Genre> getAllGenres() {
+        return genreService.getAllGenres();
+    }
+
+    @GetMapping("/{id}")
+    public Genre getGenreById(@PathVariable Long id) {
+        return genreService.getGenreById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteGenre(@PathVariable Long id) {
+        genreService.deleteGenre(id);
+    }
+}
+
+In these controller classes, we define REST endpoints for creating, retrieving, and deleting authors and genres. The @RestController annotation marks these classes as REST controllers, and the @RequestMapping annotation sets the base URL for the endpoints.
+
+    The POST requests allow you to create new authors and genres by sending JSON data in the request body.
+    The GET requests retrieve a list of all authors or genres or fetch a specific author or genre by ID.
+    The DELETE requests allow you to delete authors and genres by specifying their IDs in the URL path.
+
+You can extend these controllers or add more endpoints based on your application's requirements.
+User
+Give me all crud methods for the book controller along with the search by author and search by genre endpoints
+ChatGPT
+
+Here are the CRUD methods for the BookController along with the search endpoints for searching books by author and genre:
+
+Book Controller:
+
+java
+
+@RestController
+@RequestMapping("/api/books")
+public class BookController {
+    @Autowired
+    private BookService bookService;
+
+    // Create a new book
+    @PostMapping
+    public Book createBook(@RequestBody Book book) {
+        return bookService.saveBook(book);
+    }
+
+    // Get all books
+    @GetMapping
+    public List<Book> getAllBooks() {
+        return bookService.getAllBooks();
+    }
+
+    // Get a book by its ID
+    @GetMapping("/{id}")
+    public Book getBookById(@PathVariable Long id) {
+        return bookService.getBookById(id);
+    }
+
+    // Update a book
+    @PutMapping("/{id}")
+    public Book updateBook(@PathVariable Long id, @RequestBody Book book) {
+        // Set the book's ID to ensure the correct book is updated
+        book.setId(id);
+        return bookService.saveBook(book);
+    }
+
+    // Delete a book by its ID
+    @DeleteMapping("/{id}")
+    public void deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+    }
+
+    // Search for books by title
+    @GetMapping("/search")
+    public List<Book> searchBooksByTitle(@RequestParam("title") String title) {
+        return bookService.searchBooksByTitle(title);
+    }
+
+    // Search for books by author
+    @GetMapping("/searchByAuthor")
+    public List<Book> searchBooksByAuthor(@RequestParam("authorId") Long authorId) {
+        Author author = new Author();
+        author.setId(authorId);
+        return bookService.getBooksByAuthor(author);
+    }
+
+    // Search for books by genre
+    @GetMapping("/searchByGenre")
+    public List<Book> searchBooksByGenre(@RequestParam("genreId") Long genreId) {
+        Genre genre = new Genre();
+        genre.setId(genreId);
+        return bookService.getBooksByGenre(genre);
+    }
+}
+
+In this BookController, we've added the following CRUD methods for creating, retrieving, updating, and deleting books. Additionally, there are endpoints to search books by title, author, and genre. These methods allow you to perform a wide range of operations on the Book entities in your online bookstore application. You can use HTTP requests to access these endpoints for managing books.
+User
+Define getters and setters for all 3 models 
+ChatGPT
+
+Here are the getter and setter methods for the Author, Genre, and Book model classes:
+
+Author Class:
+
+java
+
+@Entity
+public class Author {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String bio;
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+}
+
+Genre Class:
+
+java
+
+@Entity
+public class Genre {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String description;
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}
+
+Book Class:
+
+java
+
+@Entity
+public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String title;
+    @ManyToOne
+    private Author author;
+    @ManyToOne
+    private Genre genre;
+    private double price;
+    private int quantityAvailable;
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    public Genre getGenre() {
+        return genre;
+    }
+
+    public void setGenre(Genre genre) {
+        this.genre = genre;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getQuantityAvailable() {
+        return quantityAvailable;
+    }
+
+    public void setQuantityAvailable(int quantityAvailable) {
+        this.quantityAvailable = quantityAvailable;
+    }
+}
+
+These getter and setter methods allow you to access and modify the properties of the Author, Genre, and Book model classes. They are essential for encapsulating the state of these entities and making them accessible for CRUD operations in your application.
+User
+Modify bookservice so it sets author and genre from database when adding a new book
+ChatGPT
+
+To modify the BookService so that it sets the Author and Genre from the database when adding a new book, you should update the createBook method in the BookService class. You can fetch the corresponding Author and Genre entities from the database using their IDs and set them on the Book entity before saving it. Here's how you can do it:
+
+java
+
+@Service
+public class BookService {
+    @Autowired
+    private BookRepository bookRepository;
+    
+    @Autowired
+    private AuthorRepository authorRepository;
+    
+    @Autowired
+    private GenreRepository genreRepository;
+
+    public Book createBook(Book book) {
+        // Fetch the Author and Genre entities from the database based on their IDs
+        Author author = authorRepository.findById(book.getAuthor().getId()).orElse(null);
+        Genre genre = genreRepository.findById(book.getGenre().getId()).orElse(null);
+
+        if (author == null || genre == null) {
+            // Handle the case where the specified Author or Genre doesn't exist
+            // You can throw an exception or handle it according to your application's logic
+            return null; // or throw an exception
+        }
+
+        // Set the retrieved Author and Genre on the Book entity
+        book.setAuthor(author);
+        book.setGenre(genre);
+
+        return bookRepository.save(book);
+    }
+    
+    // Other methods
+}
+
+In this modified createBook method, we first fetch the Author and Genre entities from the database using their respective IDs provided in the Book object. If the entities exist, we set them on the Book entity and then save it. If the specified Author or Genre doesn't exist, you can handle it according to your application's requirements, such as throwing an exception or returning an appropriate response.
+User
+Define a book DTO which stores author and genre as strings
+ChatGPT
+
+You can create a DTO (Data Transfer Object) for the Book entity that stores the Author and Genre as strings. This is useful for presenting data to clients in a more user-friendly way or when you want to include additional information along with the basic book details. Here's how you can define the BookDTO:
+
+java
+
+public class BookDTO {
+    private Long id;
+    private String title;
+    private String authorName;
+    private String genreName;
+    private double price;
+    private int quantityAvailable;
+
+    // Constructors, getters, and setters
+}
+
+In this BookDTO, we include the following properties:
+
+    id: The unique identifier for the book.
+    title: The title of the book.
+    authorName: The name of the author as a string.
+    genreName: The name of the genre as a string.
+    price: The price of the book.
+    quantityAvailable: The quantity of the book available.
+
+You can also provide constructors, getters, and setters for the BookDTO class to allow for easy mapping between Book entities and this DTO when needed.
+
+When converting from a Book entity to a BookDTO, you can populate the authorName and genreName properties by extracting the respective Author and Genre names from the associated entities. Similarly, when converting from a BookDTO back to a Book entity, you may need to look up the corresponding Author and Genre entities based on their names and set them on the Book object.
+User
+Generate unit tests for this app
+ChatGPT
+
+Creating unit tests for a Spring application, including the controllers, services, and repositories, can be quite extensive and depends on your specific application logic. I'll provide a general outline for writing unit tests for a Spring Boot application using JUnit and Mockito. You'll need to adapt and expand these tests according to your application's requirements. Here's a basic structure for unit tests:
+
+1. Create Test Classes:
+
+Create test classes for your controllers, services, and repositories, mirroring the structure of your main classes. For example, you should have test classes like AuthorControllerTest, GenreControllerTest, BookControllerTest, AuthorServiceTest, GenreServiceTest, BookServiceTest, AuthorRepositoryTest, GenreRepositoryTest, and BookRepositoryTest.
+
+2. Test Dependencies:
+
+In your test classes, use @RunWith(SpringRunner.class) or @SpringBootTest annotations to enable Spring Boot testing. You can also use @MockBean to mock dependencies like repositories and services when testing controllers.
+
+3. Mock Dependencies:
+
+Use Mockito to create mock objects for your dependencies, especially when testing services or controllers that depend on other services or repositories.
+
+4. Write Test Cases:
+
+Write test methods to cover various scenarios. For example:
+
+    For controller tests, you can use MockMvc to simulate HTTP requests and test the behavior of your controllers.
+    For service tests, test the business logic of your services.
+    For repository tests, use JPA testing tools or in-memory databases to verify that data is being persisted correctly.
+
+Here's an example of a simple test for the BookService class using JUnit and Mockito:
+
+java
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class BookServiceTest {
+
+    @Autowired
+    private BookService bookService;
+
+    @MockBean
+    private BookRepository bookRepository;
+
+    @Test
+    public void testCreateBook() {
+        // Create a sample book
+        Book book = new Book();
+        book.setTitle("Sample Book");
+        Author author = new Author();
+        author.setId(1L);
+        book.setAuthor(author);
+        Genre genre = new Genre();
+        genre.setId(1L);
+        book.setGenre(genre);
+        book.setPrice(19.99);
+        book.setQuantityAvailable(10);
+
+        // Mock the behavior of the repository
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
+
+        // Test the service method
+        Book savedBook = bookService.createBook(book);
+
+        // Assertions
+        assertEquals("Sample Book", savedBook.getTitle());
+        assertEquals(1L, savedBook.getAuthor().getId());
+        assertEquals(1L, savedBook.getGenre().getId());
+        assertEquals(19.99, savedBook.getPrice(), 0.01);
+        assertEquals(10, savedBook.getQuantityAvailable());
+    }
+}
+
+This is just a simple example. You should write more comprehensive tests that cover different scenarios, including edge cases and error handling. Additionally, consider using tools like MockMvc for testing controllers and in-memory databases for repository tests when appropriate.
+
+Remember to adjust and expand these tests based on the specific requirements and complexity of your application.
+User
+Write unit tests for all 3 services
+ChatGPT
+
+Here are example unit tests for the three services: AuthorService, GenreService, and BookService. These tests use JUnit and Mockito to mock dependencies and verify the behavior of the service methods. You should adapt these tests to match your application's specific requirements and business logic.
+
+AuthorServiceTest:
+
+java
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class AuthorServiceTest {
+
+    @Autowired
+    private AuthorService authorService;
+
+    @MockBean
+    private AuthorRepository authorRepository;
+
+    @Test
+    public void testCreateAuthor() {
+        Author author = new Author();
+        author.setName("John Doe");
+        author.setBio("A sample biography");
+
+        when(authorRepository.save(any(Author.class))).thenReturn(author);
+
+        Author savedAuthor = authorService.createAuthor(author);
+
+        assertEquals("John Doe", savedAuthor.getName());
+        assertEquals("A sample biography", savedAuthor.getBio());
+    }
+
+    @Test
+    public void testGetAuthorById() {
+        Author author = new Author();
+        author.setId(1L);
+        author.setName("Jane Smith");
+        author.setBio("Another biography");
+
+        when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+
+        Author retrievedAuthor = authorService.getAuthorById(1L);
+
+        assertEquals(1L, retrievedAuthor.getId());
+        assertEquals("Jane Smith", retrievedAuthor.getName());
+        assertEquals("Another biography", retrievedAuthor.getBio());
+    }
+
+    // Additional tests for update, delete, and more
+}
+
+GenreServiceTest:
+
+java
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class GenreServiceTest {
+
+    @Autowired
+    private GenreService genreService;
+
+    @MockBean
+    private GenreRepository genreRepository;
+
+    @Test
+    public void testCreateGenre() {
+        Genre genre = new Genre();
+        genre.setName("Fiction");
+        genre.setDescription("A broad genre encompassing various types of fiction books");
+
+        when(genreRepository.save(any(Genre.class))).thenReturn(genre);
+
+        Genre savedGenre = genreService.createGenre(genre);
+
+        assertEquals("Fiction", savedGenre.getName());
+        assertEquals("A broad genre encompassing various types of fiction books", savedGenre.getDescription());
+    }
+
+    @Test
+    public void testGetGenreById() {
+        Genre genre = new Genre();
+        genre.setId(1L);
+        genre.setName("Mystery");
+        genre.setDescription("Books that involve solving mysteries and crimes");
+
+        when(genreRepository.findById(1L)).thenReturn(Optional.of(genre));
+
+        Genre retrievedGenre = genreService.getGenreById(1L);
+
+        assertEquals(1L, retrievedGenre.getId());
+        assertEquals("Mystery", retrievedGenre.getName());
+        assertEquals("Books that involve solving mysteries and crimes", retrievedGenre.getDescription());
+    }
+
+    // Additional tests for update, delete, and more
+}
+
+BookServiceTest:
+
+java
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class BookServiceTest {
+
+    @Autowired
+    private BookService bookService;
+
+    @MockBean
+    private BookRepository bookRepository;
+
+    @Test
+    public void testCreateBook() {
+        Book book = new Book();
+        book.setTitle("Sample Book");
+        Author author = new Author();
+        author.setId(1L);
+        book.setAuthor(author);
+        Genre genre = new Genre();
+        genre.setId(1L);
+        book.setGenre(genre);
+        book.setPrice(19.99);
+        book.setQuantityAvailable(10);
+
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
+
+        Book savedBook = bookService.createBook(book);
+
+        assertEquals("Sample Book", savedBook.getTitle());
+        assertEquals(1L, savedBook.getAuthor().getId());
+        assertEquals(1L, savedBook.getGenre().getId());
+        assertEquals(19.99, savedBook.getPrice(), 0.01);
+        assertEquals(10, savedBook.getQuantityAvailable());
+    }
+
+    @Test
+    public void testGetBookById() {
+        Book book = new Book();
+        book.setId(1L);
+        book.setTitle("Another Book");
+        Author author = new Author();
+        author.setId(2L);
+        book.setAuthor(author);
+        Genre genre = new Genre();
+        genre.setId(3L);
+        book.setGenre(genre);
+        book.setPrice(24.99);
+        book.setQuantityAvailable(5);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        Book retrievedBook = bookService.getBookById(1L);
+
+        assertEquals(1L, retrievedBook.getId());
+        assertEquals("Another Book", retrievedBook.getTitle());
+        assertEquals(2L, retrievedBook.getAuthor().getId());
+        assertEquals(3L, retrievedBook.getGenre().getId());
+        assertEquals(24.99, retrievedBook.getPrice(), 0.01);
+        assertEquals(5, retrievedBook.getQuantityAvailable());
+    }
+
+    // Additional tests for update, delete, search, and more
+}
+
+These tests cover the basic CRUD operations for the Author, Genre, and Book services. Depending on your application's complexity and additional business logic, you should write more comprehensive tests to ensure your services work as expected.
